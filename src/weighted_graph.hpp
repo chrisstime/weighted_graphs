@@ -22,6 +22,14 @@ template <typename vertex>
 class weighted_graph {
 
 	private:
+	
+	struct node{
+			vertex value;
+			std::vector<std::pair<vertex, int>> adj_list;
+		};
+		
+	std::vector<node> nodes;
+	int total_edges;
 
 	//You will need to add some data members here
 	//to actually represent the graph internally,
@@ -34,7 +42,7 @@ class weighted_graph {
 	//If you are, there are many ways of doing this,
 	//as long as it passes the tests, it's okay.
 	class graph_iterator {
-
+		
 		private:
 
 		//You may need data members here.
@@ -131,7 +139,8 @@ class weighted_graph {
 //method headers. Note also that C++ is sensitive to the order you declare and define things in - you
 //have to have it available before you use it.
 
-template <typename vertex> weighted_graph<vertex>::graph_iterator::graph_iterator(const weighted_graph & g){}
+template <typename vertex> weighted_graph<vertex>::graph_iterator::graph_iterator(const weighted_graph & g){
+}
 template <typename vertex> weighted_graph<vertex>::graph_iterator::graph_iterator(const weighted_graph & g, size_t start_pos){}
 template <typename vertex> weighted_graph<vertex>::graph_iterator::~graph_iterator(){}
 template <typename vertex> typename weighted_graph<vertex>::graph_iterator weighted_graph<vertex>::graph_iterator::operator=(const graph_iterator& it){ auto g = graph_iterator(weighted_graph<vertex>()); return g; }
@@ -170,7 +179,7 @@ template <typename vertex>	typename weighted_graph<vertex>::neighbour_iterator w
 }
 
 template <typename vertex> weighted_graph<vertex>::weighted_graph(){
-
+	total_edges = 0;
 }
 
 template <typename vertex> weighted_graph<vertex>::~weighted_graph(){
@@ -178,40 +187,102 @@ template <typename vertex> weighted_graph<vertex>::~weighted_graph(){
 }
 
 template <typename vertex> bool weighted_graph<vertex>::has_vertex(const vertex& u) const {
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u) return true;
+	}
 	return false;
 }
 
 template <typename vertex> bool weighted_graph<vertex>::are_adjacent(const vertex& u, const vertex& v) const {
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u){
+			for(long unsigned int j = 0; j < nodes[i].adj_list.size(); j++){
+				if(nodes[i].adj_list[j].first == v) return true;
+			}
+		}
+	}
 	return false;
 }
 
 template <typename vertex> void weighted_graph<vertex>::add_vertex(const vertex& v) {
-
+	node new_vertex;
+	new_vertex.value = v;
+	nodes.push_back(new_vertex);
 }
 
 template <typename vertex> void weighted_graph<vertex>::add_edge(const vertex& u, const vertex& v, const int& weight) {
-
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u){
+			nodes[i].adj_list.push_back(std::make_pair(v, weight));
+			total_edges++;
+		}
+		if(nodes[i].value == v){
+			nodes[i].adj_list.push_back(std::make_pair(u, weight));
+		}
+	}
 }
 
 template <typename vertex> void weighted_graph<vertex>::remove_vertex(const vertex& u) {
-
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u) nodes.erase(nodes.begin() + i);
+	}
 }
 
 
 template <typename vertex> void weighted_graph<vertex>::remove_edge(const vertex& u, const vertex& v) {
-
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u){
+			for(long unsigned int j = 0; j < nodes[i].adj_list.size(); j++){
+				if(nodes[i].adj_list[j].first == v){
+					nodes[i].adj_list.erase(nodes[i].adj_list.begin() + j);
+					total_edges--;
+				}
+			}
+		}
+		if(nodes[i].value == v){
+			for(long unsigned int k = 0; k < nodes[i].adj_list.size(); k++){
+				if(nodes[i].adj_list[k].first == u){
+					nodes[i].adj_list.erase(nodes[i].adj_list.begin() + k);
+				}
+			}
+		}
+	}
 }
 
 template <typename vertex> void weighted_graph<vertex>::set_edge_weight(const vertex& u, const vertex& v, const int& weight) {
-
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u){
+			for(long unsigned int j = 0; j < nodes[i].adj_list.size(); j++){
+				if(nodes[i].adj_list[j].first == v){
+					nodes[i].adj_list[j].second = weight;
+				}
+			}
+		}
+		if(nodes[i].value == v){
+			for(long unsigned int k = 0; k < nodes[i].adj_list.size(); k++){
+				if(nodes[i].adj_list[k].first == u){
+					nodes[i].adj_list[k].second = weight;
+				}
+			}
+		}
+	}
 }
 
 template <typename vertex> int weighted_graph<vertex>::get_edge_weight(const vertex& u, const vertex& v) const {
+	for(long unsigned int i = 0; i < nodes.size(); i++){
+		if(nodes[i].value == u){
+			for(long unsigned int j = 0; j < nodes[i].adj_list.size(); j++){
+				if(nodes[i].adj_list[j].first == v){
+					return nodes[i].adj_list[j].second;
+				}
+			}
+		}
+	}
 	return 0;
 }
 
 template <typename vertex> int weighted_graph<vertex>::degree(const vertex& u) const {
-	return 0;
+	return total_edges;
 }
 
 template <typename vertex> int weighted_graph<vertex>::weighted_degree(const vertex& u) {
@@ -219,11 +290,11 @@ template <typename vertex> int weighted_graph<vertex>::weighted_degree(const ver
 }
 
 template <typename vertex> int weighted_graph<vertex>::num_vertices() const {
-	return 0;
+	return nodes.size();
 }
 
 template <typename vertex> int weighted_graph<vertex>::num_edges() const {
-	return 0;
+	return total_edges;
 }
 
 template <typename vertex> int weighted_graph<vertex>::total_weight() {
